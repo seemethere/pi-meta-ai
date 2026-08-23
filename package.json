@@ -1,6 +1,6 @@
 {
   "name": "pi-meta-ai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pi extension for Meta Model API (Muse Spark) via API key. Adds Meta provider with OpenAI Responses compatibility, tool calling, reasoning, and easy login.",
   "type": "module",
   "keywords": ["pi-package", "pi-extension", "meta", "model-api", "muse-spark", "llm", "ai"],
