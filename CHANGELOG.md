@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2 - 2026-08-23
+
+### Added
+- Muse Spark 1.2 (standard) and 1.2-contributor models — all at https://api.meta.ai/v1, 1M context, openai-responses, same thinkingLevelMap
+- `baseModel` + `standardCost`/`contributorCost` pattern to share config across 1.1, 1.2, 1.2-contributor (keeps 1.1 backward compat)
+- `/meta status` and `/meta help` now list all 3 models with registration checks
+- `models.json.example` includes all 3 models
+- Real pricing: Standard $1.25/$0.15/$4.25, Contributor $0.10/$0.002/$0.20 per 1M (was $0 free-preview placeholder) — from Meta via https://www.layer3labs.io/guides/muse-spark-1-2-pricing and https://dev.meta.ai/docs/pricing-rate-limits/
+
 ## 0.1.1 - 2026-07-09
 
 ### Fixed
