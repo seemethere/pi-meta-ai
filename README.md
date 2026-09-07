@@ -1,6 +1,6 @@
 # pi-meta-ai
 
-Pi extension for [Meta Model API](https://dev.meta.ai) — adds **Muse Spark 1.1** to [pi coding agent](https://github.com/badlogic/pi-mono) via API key.
+Pi extension for [Meta Model API](https://dev.meta.ai) — adds **Muse Spark** (1.3 / 1.2 / 1.1, including contributor variants) to [pi coding agent](https://github.com/badlogic/pi-mono) via API key.
 
 Meta Model API is OpenAI-compatible with Responses API at `https://api.meta.ai/v1`. This extension registers provider `meta-ai` using `openai-responses` for full agentic support: tool calling, parallel tools, streaming, reasoning effort, structured output, image input, prompt caching, 1M context.
 
@@ -36,16 +36,18 @@ pi install npm:pi-meta-ai
 
 ## Quick start
 
-1. **Get API key:** https://dev.meta.ai → API keys → Create. Key format `LLM|...`
+1. **Get API key:** <https://dev.meta.ai> → API keys → Create. Key format `LLM|...`
 
 2. **Authenticate (pick one):**
 
    **Option A — Inside pi (recommended):**
+
    ```
    /login → API key → Meta Model API → paste LLM|... key
    ```
 
    **Option B — Env var (before launching pi):**
+
    ```bash
    export MODEL_API_KEY="LLM|..."
    # Also supports META_API_KEY as fallback
@@ -60,11 +62,13 @@ pi install npm:pi-meta-ai
    > Env vars must be set before launching pi. If you set them after pi is running, run `/reload` or restart pi from the shell where var is exported.
 
 3. **Select model:**
+
    ```
-   /model → meta-ai/muse-spark-1.1
+   /model → meta-ai/muse-spark-1.3
    ```
 
 4. **Verify:**
+
    ```
    /meta status
    ```
@@ -88,67 +92,36 @@ pi install npm:pi-meta-ai
 - **Caching:** prompt caching automatic
 - **Context:** 1M tokens, 64K max output
 
-> **Cost note:** `cost` is set to `0` as Meta Model API is currently in free preview. If/when pricing is published, this will be updated. Pi's cost UI will show $0 until then — intentional.
+> **Cost note:** paid Spark is $1.25 / $4.25 / $0.15 per M (input/output/cached). Contributor variants are $0.10 / $0.20 / $0.002 and may be used by Meta for training.
 
 ## Config reference (without extension)
 
-If you prefer static config, create `~/.pi/agent/models.json` — see [`models.json.example`](./models.json.example):
+If you prefer static config, copy [`models.json.example`](./models.json.example) to `~/.pi/agent/models.json`. It lists 1.3, 1.3-contributor, 1.2, 1.2-contributor, and 1.1.
 
-```json
-{
-  "providers": {
-    "meta-ai": {
-      "baseUrl": "https://api.meta.ai/v1",
-      "apiKey": "$MODEL_API_KEY",
-      "api": "openai-responses",
-      "models": [
-        {
-          "id": "muse-spark-1.1",
-          "name": "Muse Spark 1.1",
-          "reasoning": true,
-          "input": ["text", "image"],
-          "contextWindow": 1048576,
-          "maxTokens": 64000,
-          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
-          "thinkingLevelMap": {
-            "minimal": "minimal",
-            "low": "low",
-            "medium": "medium",
-            "high": "high",
-            "xhigh": "high"
-          },
-          "compat": {
-            "supportsReasoningEffort": true,
-            "supportsDeveloperRole": true,
-            "supportsUsageInStreaming": true
-          }
-        }
-      ]
-    }
-  }
-}
-```
-
-Extension install is recommended for better login UX and future updates.
+Extension install is recommended for better login UX and catalog refresh.
 
 ## Troubleshooting
 
 **Model not visible in `/model`:**
+
 - Ensure extension is loaded: `pi -e ./extensions/meta-model-api` or `pi install ...`
 - Run `/reload` then `/model`
 - Check `/meta status` shows "Model registered: yes"
 
 **`Meta Model API not authenticated`:**
+
 - Run `/login → API key → Meta Model API` and paste `LLM|...` key
 - Or `export MODEL_API_KEY=LLM|...` **before** launching pi, then `/reload`
 - Verify with `/meta status` — should show `Resolved: yes ✓ ready`
 
 **Invalid key error:**
-- Key must start with `LLM|` from https://dev.meta.ai
+
+- Key must start with `LLM|` from <https://dev.meta.ai>
 - Re-create key at dev.meta.ai → API keys → Create
 - Try `/logout meta-ai` then `/login` again
 
 **Env var not picked up:**
+
 - Export before launch: `export MODEL_API_KEY=... && pi`
 - Inside running pi, `/reload` after export won't pick up new env if parent shell didn't have it — restart pi from shell where var is exported
 
@@ -167,7 +140,7 @@ npm run typecheck
 pi -e ./extensions/meta-model-api/index.ts
 # inside pi:
 # /meta status
-# /model → meta-ai/muse-spark-1.1
+# /model → meta-ai/muse-spark-1.3
 ```
 
 Structure:

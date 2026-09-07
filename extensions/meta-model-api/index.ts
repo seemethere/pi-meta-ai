@@ -17,41 +17,41 @@ const META_ENV_VAR = "META_API_KEY";
 
 type MetaProviderModel = NonNullable<Parameters<ExtensionAPI["registerProvider"]>[1]["models"]>[number];
 
+const PAID_COST = { input: 1.25, output: 4.25, cacheRead: 0.15, cacheWrite: 0 };
+const CONTRIBUTOR_COST = { input: 0.1, output: 0.2, cacheRead: 0.002, cacheWrite: 0 };
+const SPARK_THINKING = { off: null, minimal: "minimal", low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: null } as any;
+// SAFETY: pi-ai Model.input is text|image only; video/audio are advertised for later pi-ai.
+const SPARK_INPUT = ["text", "image", "video", "audio"] as unknown as MetaProviderModel["input"];
+const SPARK_COMPAT = { supportsReasoningEffort: true, supportsToolSearch: true } as any;
+
+function sparkModel(
+  id: string,
+  name: string,
+  cost: MetaProviderModel["cost"],
+  thinkingLevelMap = SPARK_THINKING,
+): MetaProviderModel {
+  return {
+    id,
+    name,
+    reasoning: true,
+    input: SPARK_INPUT,
+    cost,
+    contextWindow: 1_048_576,
+    maxTokens: 256_000,
+    thinkingLevelMap,
+    compat: SPARK_COMPAT,
+  };
+}
+
+// Meta Model API ids only (not OpenCode Zen `*-contributor-free`).
 const FALLBACK_MODELS: MetaProviderModel[] = [
-  {
-    id: "muse-spark-1.2",
-    name: "Muse Spark 1.2",
-    reasoning: true,
-    input: ["text", "image", "video", "audio"] as unknown as MetaProviderModel["input"],
-    cost: { input: 1.25, output: 4.25, cacheRead: 0.15, cacheWrite: 0 },
-    contextWindow: 1_048_576,
-    maxTokens: 256_000,
-    thinkingLevelMap: { off: null, minimal: "minimal", low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: null } as any,
-    compat: { supportsReasoningEffort: true, supportsToolSearch: true } as any,
-  },
-  {
-    id: "muse-spark-1.2-contributor",
-    name: "Muse Spark 1.2 Contributor",
-    reasoning: true,
-    input: ["text", "image", "video", "audio"] as unknown as MetaProviderModel["input"],
-    cost: { input: 0.1, output: 0.2, cacheRead: 0.002, cacheWrite: 0 },
-    contextWindow: 1_048_576,
-    maxTokens: 256_000,
-    thinkingLevelMap: { off: null, minimal: "minimal", low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: null } as any,
-    compat: { supportsReasoningEffort: true, supportsToolSearch: true } as any,
-  },
-  {
-    id: "muse-spark-1.1",
-    name: "Muse Spark 1.1",
-    reasoning: true,
-    input: ["text", "image", "video", "audio"] as unknown as MetaProviderModel["input"],
-    cost: { input: 1.25, output: 4.25, cacheRead: 0.15, cacheWrite: 0 },
-    contextWindow: 1_048_576,
-    maxTokens: 256_000,
-    thinkingLevelMap: { off: null, minimal: "minimal", low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: null } as any,
-    compat: { supportsReasoningEffort: true, supportsToolSearch: true } as any,
-  },
+  sparkModel("muse-spark-1.3", "Muse Spark 1.3", PAID_COST, { ...SPARK_THINKING, max: "max" }),
+  sparkModel("muse-spark-1.3-contributor", "Muse Spark 1.3 Contributor", CONTRIBUTOR_COST),
+  sparkModel("muse-spark-1.2", "Muse Spark 1.2", PAID_COST),
+  sparkModel("muse-spark-1.2-contributor", "Muse Spark 1.2 Contributor", CONTRIBUTOR_COST),
+  sparkModel("muse-spark-1.1", "Muse Spark 1.1", PAID_COST),
 ];
+const DEFAULT_MODEL = FALLBACK_MODELS[0].id;
 
 function maskKey(key: string): string {
   if (!key) return "(none)";
@@ -199,7 +199,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("session_start", async (_event, ctx) => {
     ctx.ui.setStatus("meta-ai", undefined);
 
-    const model = ctx.modelRegistry.find(PROVIDER_ID, "muse-spark-1.2") || ctx.modelRegistry.find(PROVIDER_ID, FALLBACK_MODELS[0].id);
+    const model = ctx.modelRegistry.find(PROVIDER_ID, DEFAULT_MODEL) || ctx.modelRegistry.find(PROVIDER_ID, FALLBACK_MODELS[0].id);
     if (!model) {
       ctx.ui.notify(`Meta provider not registered correctly. Try /reload or reinstall extension.`, "error");
       return;
@@ -221,7 +221,7 @@ export default function (pi: ExtensionAPI) {
 
     if (!isAuthenticated) {
       ctx.ui.notify(
-        `Meta Model API not authenticated. Run /login → API key → '${DISPLAY_NAME}' to add your key, or export ${ENV_VAR}=LLM|... before launching pi. Then /model → ${PROVIDER_ID}/muse-spark-1.2`,
+        `Meta Model API not authenticated. Run /login → API key → '${DISPLAY_NAME}' to add your key, or export ${ENV_VAR}=LLM|... before launching pi. Then /model → ${PROVIDER_ID}/${DEFAULT_MODEL}`,
         "warning"
       );
     }
@@ -238,7 +238,7 @@ export default function (pi: ExtensionAPI) {
 
       if (sub === "status") {
         const envKey = getEnvKey();
-        const model = ctx.modelRegistry.find(PROVIDER_ID, "muse-spark-1.2") || ctx.modelRegistry.find(PROVIDER_ID, FALLBACK_MODELS[0].id);
+        const model = ctx.modelRegistry.find(PROVIDER_ID, DEFAULT_MODEL) || ctx.modelRegistry.find(PROVIDER_ID, FALLBACK_MODELS[0].id);
         const authStatus = ctx.modelRegistry.getProviderAuthStatus(PROVIDER_ID);
         const stored = getStoredCredential(ctx);
         const isActive = ctx.model?.provider === PROVIDER_ID;
@@ -268,11 +268,11 @@ export default function (pi: ExtensionAPI) {
           ``,
           `State:`,
           `  Model registered: ${model ? "yes" : "no"}`,
-          `  Active model: ${isActive ? `yes ✓ (${ctx.model?.id})` : "no — use /model to select meta-ai/muse-spark-1.2"}`,
+          `  Active model: ${isActive ? `yes ✓ (${ctx.model?.id})` : `no — use /model to select ${PROVIDER_ID}/${DEFAULT_MODEL}`}`,
           ``,
           `Next steps:`,
           `  1. /login → API key → "${DISPLAY_NAME}" → paste LLM|... key`,
-          `  2. /model → ${PROVIDER_ID}/muse-spark-1.2`,
+          `  2. /model → ${PROVIDER_ID}/${DEFAULT_MODEL}`,
           `  3. Ask anything — pi tools (read, bash, edit, write) work out of the box`,
           ``,
           `Env alternative: export ${ENV_VAR}=LLM|... then /reload (also supports ${META_ENV_VAR})`,
@@ -291,14 +291,14 @@ export default function (pi: ExtensionAPI) {
             `  /meta status — show key status (masked), auth source, active model`,
             `  /meta help   — this help`,
             `  /login       — add your key via API key → Meta Model API`,
-            `  /model       — select meta-ai/muse-spark-1.2`,
+            `  /model       — select ${PROVIDER_ID}/${DEFAULT_MODEL}`,
             ``,
             `Setup:`,
             `  1. Get key: https://dev.meta.ai → API keys → Create (LLM|...)`,
             `  2. Export or login:`,
             `     export MODEL_API_KEY=LLM|...   (before launching pi)`,
             `     or inside pi: /login → API key → Meta Model API`,
-            `  3. /model → meta-ai/muse-spark-1.2`,
+            `  3. /model → ${PROVIDER_ID}/${DEFAULT_MODEL}`,
             ``,
             `Docs: https://dev.meta.ai/docs`,
           ].join("\n"),

@@ -21,7 +21,7 @@ Inside pi:
 
 ```
 /login → API key → Meta Model API → paste LLM|... key
-/model → meta-ai/muse-spark-1.1
+/model → meta-ai/muse-spark-1.3
 /meta status
 ```
 
@@ -40,7 +40,7 @@ pi -e ./extensions/meta-model-api
   - [ ] `/meta status` shows warning when not authenticated
   - [ ] `/login` → API key → Meta Model API works
   - [ ] Env var fallback works (`MODEL_API_KEY` and `META_API_KEY`)
-  - [ ] `/model` lists `meta-ai/muse-spark-1.1`
+  - [ ] `/model` lists `meta-ai/muse-spark-1.3` (and 1.3-contributor, 1.2, 1.2-contributor, 1.1)
   - [ ] Tool calling works (read, bash, etc.)
   - [ ] Thinking levels map correctly
   - [ ] No footer status pollution (`setStatus` cleared on start/shutdown)
@@ -60,5 +60,5 @@ pi -e ./extensions/meta-model-api
 
 ## Reporting issues
 
-Use GitHub issues: https://github.com/seemethere/pi-meta-ai/issues
+Use GitHub issues: <https://github.com/seemethere/pi-meta-ai/issues>
 Include pi version (`pi --version`), Node version, and `/meta status` output (masked).
