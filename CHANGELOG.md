@@ -5,17 +5,20 @@ All notable changes to this project will be documented in this file.
 ## 0.1.1 - 2026-07-09
 
 ### Fixed
+
 - Auth check now correctly rejects legacy `oauth` credentials unless env var present, prevents false `✓ ready` status (codex blocker fix)
 - README env-var quickstart clarifies `pi -e ./extensions/meta-model-api` must stay loaded for source installs
 - `getProviderAuthStatus` + `hasValidStored` used instead of `find()` for auth detection
 
 ### Added
+
 - `LICENSE` file (MIT)
 - `CONTRIBUTING.md`, `SECURITY.md`, `.env.example`, `tsconfig.json`
 - `package.json` metadata: `author`, `homepage`, `bugs`, `engines`, `files`, `typecheck` script
 - `.gitignore` expanded (env files, tsbuildinfo, coverage logs)
 
 ### Changed
+
 - README rewritten for exec-ready first-time UX: prerequisites, install, quickstart, troubleshooting, security, cost note
 - `models.json.example` now includes `compat` flags to match extension
 
